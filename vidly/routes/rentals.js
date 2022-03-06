@@ -2,6 +2,7 @@ const { Rental, validate, removeRental } = require('../models/rental');
 const { Movie } = require('../models/movie');
 const { Customer } = require('../models/customer');
 const mongoose = require('mongoose');
+const validateMid = require('../middleware/validate');
 //const Fawn = require('fawn');  // make mongooseDB more secure when operate. to protect data
 const express = require('express');
 const router = express.Router();
@@ -13,9 +14,9 @@ router.get('/', async (req, res) => {
     res.send(rentals);
 });
 
-router.post('/', async (req, res) => {
-    const { error } = validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+router.post('/', validateMid(validate), async (req, res) => {
+    //const { error } = validate(req.body);
+    //if (error) return res.status(400).send(error.details[0].message);
 
     if (!mongoose.Types.ObjectId.isValid(req.body.customerId)) {
         return res.status(400).send('Invalid Customer.');

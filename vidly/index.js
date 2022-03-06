@@ -1,28 +1,26 @@
-
-const mongoose = require('mongoose');
-const Joi = require('joi');
-Joi.objectId = require('joi-objectid')(Joi);  // to valid id
+const winston = require('winston');
 const express = require('express');
-const genres = require('./routes/genres');
-const customers = require('./routes/customers');
-const movies = require('./routes/movies');
-const rentals = require('./routes/rentals');
-const users = require('./routes/users');
-const auth = require('./routes/auth');
 const app = express();
 
-mongoose.connect('mongodb://localhost/vidly')
-    .then(() => console.log('Connected to MongoDB...'))
-    .catch((error) => console.error('Could not connect to MongoDB...'));
+const helmet = require('helmet');  // to protect this app from some attacks
+const compression = require('compression');
 
-app.use(express.json());
-app.use('/api/genres', genres);
-app.use('/api/customers', customers);
-app.use('/api/movies', movies);
-app.use('/api/rentals', rentals);
-app.use('/api/users', users);
-app.use('/api/auth', auth);
+require('./startup/routes')(app);
+require('./startup/db')();
+require('./startup/logging')();
+require('./startup/config')();
+require('./startup/validation')();
+//require('./startup/prod')(app);
+app.use(helmet());
+app.use(compression());
+
+
+//throw new Error('Something faied during startup');
+//const p = Promise.reject(new Error('Something failed miserably!'));
+//p.then(() => console.log('Done')); // unhandled process rejection
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Listening on port ${port}...`));
+const server = app.listen(port, () => console.log(`Listening on port ${port}...`));
+
+module.exports = server;
 

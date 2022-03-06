@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const moment = require('moment');
 const Joi = require('joi');
 
 
@@ -54,6 +55,22 @@ const rentalSchema = mongoose.Schema({
         min: 0
     }
 });
+
+// schema.statics: this function is called on a class directly, like 'Rental.lookup()'
+rentalSchema.statics.lookup = async function (customerId, movieId) {
+    return await this.findOne({
+        'customer._id': customerId,
+        'movie._id': movieId
+    });
+};
+
+// schema.methods: Instance function like 'new User().generateAuthToken'
+rentalSchema.methods.return = async function () {
+    this.dateReturned = new Date();
+
+    const rentalDays = moment().diff(this.dateOut, 'days');
+    this.rentalFee = rentalDays * this.movie.dailyRentalRate;
+}
 
 function validateRental(rental) {
     const schema = Joi.object({
